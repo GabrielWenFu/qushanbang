@@ -2,7 +2,7 @@
   <div class="index">
     <h4>{{ title }}</h4>
     <ul>
-      <li v-for="(item, index) in list" :key="index" @click="goPage(item)">
+      <li v-for="(item, index) in list" :key="index" @click="goPage(item, index)">
         <img :src="item.pic" alt="" lazy-load="static/tabs/s.png">
         <dl>
           <dt>{{item.name}}&nbsp;&nbsp;{{item.singer}}</dt>
@@ -26,6 +26,7 @@ export default {
     }
   },
   onLoad () {
+    this.list = []
     this.title = {
       3: '欧美榜',
       4: '流行指数榜',
@@ -41,19 +42,23 @@ export default {
       const { code, data, msg } = res.data
       if (code === 200) {
         this.list = data
+        wx.setStorage({
+          key: 'musiclist',
+          data: data
+        })
       } else {
         console.log(msg)
       }
     })
   },
   methods: {
-    goPage (item) {
+    goPage (item, index) {
       wx.setStorage({
         key: 'music',
         data: item
       })
       wx.navigateTo({
-        url: `/pages/musicDetail/main?id=${item.id}`
+        url: `/pages/musicDetail/main?id=${item.id}&index=${index}`
       })
     }
   }

@@ -59,7 +59,6 @@ export default {
       })
     },
     getuserinfo (e) {
-      console.log(e.target.userInfo)
       if (!e.target.userInfo) {
         return
       }

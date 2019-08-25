@@ -13,11 +13,11 @@
       </div>
     </div>
     <div class="detail-bottom" :class="{ 'fix-iphonex-button' : isIphoneX }">
-      <div class="detail-pre">上一首</div>
+      <div class="detail-pre" @click="pre">上一首</div>
       <div class="detail-play"  @click="audioPlay">
         <img :src="musicData.pic" alt="" class="play-active" :style="isPlay ? 'animation-play-state:running': 'animation-play-state:paused'">
       </div>
-      <div class="detail-next">下一首</div>
+      <div class="detail-next" @click="next">下一首</div>
     </div>
   </div>
 </template>
@@ -35,8 +35,14 @@ export default {
       backgroundAudioManager: null,
       scrollTop: 0,
       scrollData: [],
-      currentNum: 5
+      currentNum: 5,
+      list: [],
+      index: 0
     }
+  },
+  onShow () {
+    this.index = +this.$mp.query.index
+    this.list = wx.getStorageSync('musiclist')
   },
   onLoad () {
     const that = this
@@ -53,56 +59,10 @@ export default {
     })
     this.isIphoneX = wx.getStorageSync('isIphoneX')
     this.musicData = wx.getStorageSync('music')
-    console.log(wx.getStorageSync('historyMusicId') === this.$mp.query.id)
     if (wx.getStorageSync('historyMusicId') === this.$mp.query.id && this.currentNum !== 5) {
       return
     }
-    this.currentNum = 5
-    this.scrollTop = 0
-    Api._qqLrc(this.musicData.id).then(res => {
-      const data = res.data.split('\n')
-      const data1 = data.map((item, index) => {
-        item = item.split(']')
-        return item
-      })
-      const data2 = data1.map((items, index) => {
-        items[0] = items[0].replace(/^\[/g, '').split(':')
-        items[0] = items[0][0] * 60 + +items[0][1]
-        const obj = {}
-        obj.time = items[0]
-        obj.scrollTop = items[0] ? index * 60 - 300 : ''
-        this.scrollData.push(obj)
-        return items
-      })
-      this.backgroundAudioManager = wx.getBackgroundAudioManager()
-      this.backgroundAudioManager.title = this.musicData.name
-      this.backgroundAudioManager.epname = this.musicData.name
-      this.backgroundAudioManager.singer = this.musicData.singer
-      this.backgroundAudioManager.coverImgUrl = this.musicData.pic
-      this.backgroundAudioManager.src = this.musicData.url
-      this.backgroundAudioManager.onPlay(() => {
-        this.isPlay = true
-        wx.setStorage({
-          key: 'historyMusicId',
-          data: this.musicData.id
-        })
-        this.backgroundAudioManager.onTimeUpdate(() => {
-          const currentTime = this.backgroundAudioManager.currentTime
-          if (currentTime >= scrollData[this.currentNum].time) {
-            this.scrollTop = scrollData[this.currentNum].scrollTop + 'rpx'
-            this.currentNum++
-          }
-        })
-      })
-      this.backgroundAudioManager.onPause(() => {
-        this.isPlay = false
-      })
-      this.backgroundAudioManager.onEnded(() => {
-        this.isPlay = false
-      })
-      let scrollData = this.scrollData
-      this.lrc = data2
-    })
+    this.backgroundAudio()
   },
   methods: {
     audioPlay (e) {
@@ -112,6 +72,81 @@ export default {
         this.backgroundAudioManager.pause()
       }
       this.isPlay = !this.isPlay
+    },
+    pre () {
+      if (this.index === 0) return
+      const index = (this.index - 1) >= 0 ? this.index - 1 : 0
+      this.index = index
+      this.musicData = this.list[index]
+      wx.setStorage({
+        key: 'music',
+        data: this.list[index]
+      })
+      this.backgroundAudio()
+    },
+    next () {
+      if (this.index === this.list.length - 1) return
+      const index = (this.index + 1) <= this.list.length - 1 ? this.index + 1 : this.list.length - 1
+      this.index = index
+      this.musicData = this.list[index]
+      wx.setStorage({
+        key: 'music',
+        data: this.list[index]
+      })
+      this.backgroundAudio()
+    },
+    backgroundAudio () {
+      this.currentNum = 5
+      this.scrollTop = 0
+      Api._qqLrc(this.musicData.id).then(res => {
+        const data = res.data.split('\n')
+        const data1 = data.map((item, index) => {
+          item = item.split(']')
+          return item
+        })
+        const data2 = data1.map((items, index) => {
+          items[0] = items[0].replace(/^\[/g, '').split(':')
+          items[0] = items[0][0] * 60 + +items[0][1]
+          const obj = {}
+          obj.time = items[0]
+          obj.scrollTop = items[0] ? index * 60 - 300 : ''
+          this.scrollData.push(obj)
+          return items
+        })
+        let scrollData = this.scrollData
+        this.backgroundAudioManager = wx.getBackgroundAudioManager()
+        this.backgroundAudioManager.title = this.musicData.name
+        this.backgroundAudioManager.epname = this.musicData.name
+        this.backgroundAudioManager.singer = this.musicData.singer
+        this.backgroundAudioManager.coverImgUrl = this.musicData.pic
+        this.backgroundAudioManager.src = this.musicData.url
+        this.backgroundAudioManager.onPlay(() => {
+          this.isPlay = true
+          wx.setStorage({
+            key: 'historyMusicId',
+            data: this.musicData.id
+          })
+          this.backgroundAudioManager.onTimeUpdate(() => {
+            if (!this.isPlay) {
+              return
+            }
+            const currentTime = this.backgroundAudioManager.currentTime
+            if (currentTime >= scrollData[this.currentNum].time) {
+              this.scrollTop = scrollData[this.currentNum].scrollTop + 'rpx'
+              this.currentNum++
+            }
+          })
+        })
+        this.backgroundAudioManager.onPause(() => {
+          this.isPlay = false
+        })
+        this.backgroundAudioManager.onEnded(() => {
+          this.backgroundAudioManager.stop()
+          this.next()
+          this.isPlay = false
+        })
+        this.lrc = data2
+      })
     }
   }
 }
