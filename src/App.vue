@@ -35,12 +35,20 @@ export default {
       }
     })
   },
-  log () {
-    console.log(`log at:${Date.now()}`)
+  onHide () {
+    wx.getBackgroundAudioPlayerState({
+      success (res) {
+        const status = res.status
+        if (status === 1) {
+          wx.getBackgroundAudioManager().play()
+        }
+      }
+    })
   }
 }
 </script>
 
 <style>
-.fix-iphonex-button {    bottom:68rpx!important;}.fix-iphonex-button::after {    content: ' ';    position: fixed;    bottom: 0!important;    height: 68rpx!important;    width: 100%;    background: #fff;}
+@import '../static/images/iconfont.css';
+.fix-iphonex-button {    bottom:66rpx!important;}
 </style>

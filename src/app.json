@@ -1,8 +1,10 @@
 {
   "pages": [
+    "pages/rankingList/main",
     "pages/index/main",
     "pages/musicDetail/main",
-    "pages/counter/main"
+    "pages/myInfo/main",
+    "pages/disclaimer/main"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -10,6 +12,7 @@
     "navigationBarTitleText": "WeChat",
     "navigationBarTextStyle": "black"
   },
+  "requiredBackgroundModes": ["audio", "location"],
   "tabBar": {
     "color": "#999",
     "backgroundColor": "#fafafa",
@@ -18,14 +21,14 @@
 
     "list": [{
       "text": "首页",
-      "pagePath": "pages/index/main",
-      "iconPath": "static/tabs/home.png",
-      "selectedIconPath": "static/tabs/home-active.png"
+      "pagePath": "pages/rankingList/main",
+      "iconPath": "static/tabs/q.png",
+      "selectedIconPath": "static/tabs/q-a.png"
     }, {
-      "text": "订单",
-      "pagePath": "pages/counter/main",
-      "iconPath": "static/tabs/orders.png",
-      "selectedIconPath": "static/tabs/orders-active.png"
+      "text": "我的",
+      "pagePath": "pages/myInfo/main",
+      "iconPath": "static/tabs/s.png",
+      "selectedIconPath": "static/tabs/s-a.png"
     }]
   }
 }

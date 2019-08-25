@@ -13,7 +13,7 @@ const Api = {
   },
   _qqTopList (id = 26) {
     const options = {
-      url: `https://v1.itooi.cn/tencent/topList?id=${id}&pageSize=30&page=0&format=1`
+      url: `https://v1.itooi.cn/tencent/topList?id=${id}&pageSize=500&page=0&format=1`
     }
     return this._core(options)
   },
