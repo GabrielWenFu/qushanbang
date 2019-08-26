@@ -185,7 +185,9 @@ export default {
             data: this.musicData.id
           })
           this.backgroundAudioManager.onTimeUpdate(() => {
-            if (!scrollData[this.currentNum].time) {
+            console.log(scrollData[this.currentNum].time)
+            if (this.currentNum >= this.scrollData.length - 1) {
+              this.currentNum = this.scrollData.length - 1
               return
             }
             const currentTime = this.backgroundAudioManager.currentTime
