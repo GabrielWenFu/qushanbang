@@ -54,6 +54,7 @@ export default {
     }
   },
   onReady () {
+    this.selectDom()
     const that = this
     const query = wx.createSelectorQuery()
     query.select('#scroll').boundingClientRect()
@@ -61,14 +62,6 @@ export default {
     query.exec(function (res) {
       that.scrollEleHeight = res[0].height
     })
-    setTimeout(() => {
-      const queryContent = wx.createSelectorQuery()
-      queryContent.selectViewport().scrollOffset()
-      queryContent.select('#content').boundingClientRect()
-      queryContent.exec(function (res) {
-        that.contentEleHeight = res[1].height
-      })
-    }, 500)
   },
   onShow () {
     this.index = +this.$mp.query.index
@@ -76,7 +69,6 @@ export default {
   },
   onLoad () {
     const that = this
-    this.scrollData = []
     wx.getBackgroundAudioPlayerState({
       success (res) {
         const status = res.status
@@ -95,6 +87,22 @@ export default {
     this.backgroundAudio()
   },
   methods: {
+    selectDom () {
+      const that = this
+      this.z = 0
+      this.timeOut = null
+      this.isScrollAnimate = true
+      this.isShowScrollCurrent = false
+      this.selectTime = 0
+      setTimeout(() => {
+        const queryContent = wx.createSelectorQuery()
+        queryContent.selectViewport().scrollOffset()
+        queryContent.select('#content').boundingClientRect()
+        queryContent.exec(function (res) {
+          that.contentEleHeight = res[1].height
+        })
+      }, 500)
+    },
     scroll (e) {
       const selectTopB = e.target.scrollTop
       const scrollData = this.scrollData
@@ -157,6 +165,7 @@ export default {
       this.scrollTop = 0
       Api._qqLrc(this.musicData.id).then(res => {
         const data = res.data.split('\n')
+        this.scrollData = []
         const data1 = data.map((item, index) => {
           item = item.split(']')
           return item
@@ -170,7 +179,8 @@ export default {
           this.scrollData.push(obj)
           return items
         })
-        // this.selectTime = this.scrollData[5].time + 's'
+        this.selectDom()
+        this.lrc = data2
         let scrollData = this.scrollData
         this.backgroundAudioManager = wx.getBackgroundAudioManager()
         this.backgroundAudioManager.title = this.musicData.name
@@ -211,7 +221,6 @@ export default {
           this.next()
           this.isPlay = false
         })
-        this.lrc = data2
       })
     }
   }
