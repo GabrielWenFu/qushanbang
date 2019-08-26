@@ -5,9 +5,15 @@
         <h5>{{ musicData.name }} --- {{ musicData.singer }}</h5>
       </div>
       <div class="detail-lrc">
-        <scroll-view class="scroll-view" scroll-y=true :scroll-top="scrollTop" scroll-with-animation=true>
-          <div class="item" :class="{ 'active' :  (currentNum - 1) == index && scrollTop }" v-for="(item, index) in lrc" :key="index" :data-time="item[0]" :data-top="item[1] ? index * 60 +'rpx' : ''">
-            {{ item[1] }}
+        <div class="scroll-current">
+          <div>---</div>
+          <div @click="selectPlay">{{ selectTime }}</div>
+        </div>
+        <scroll-view id="scroll" class="scroll-view" scroll-y=true @scroll="scroll" :scroll-top="scrollTop" scroll-with-animation=true>
+          <div class="scroll-content" id="content">
+            <div class="item" :class="{ 'active' :  (currentNum - 1) == index && scrollTop }" v-for="(item, index) in lrc" :key="index" :data-time="item[0]" :data-top="(index + 1) * 60" :data-index="index">
+              {{ item[1] }}
+            </div>
           </div>
         </scroll-view> 
       </div>
@@ -37,8 +43,29 @@ export default {
       scrollData: [],
       currentNum: 5,
       list: [],
-      index: 0
+      index: 0,
+      selectTime: 0,
+      scrollEleHeight: null,
+      contentEleHeight: null
     }
+  },
+  onReady () {
+    const that = this
+    const query = wx.createSelectorQuery()
+    query.select('#scroll').boundingClientRect()
+    query.selectViewport().scrollOffset()
+    query.exec(function (res) {
+      console.log(res)
+      that.scrollEleHeight = res[0].height
+    })
+    setTimeout(() => {
+      const queryContent = wx.createSelectorQuery()
+      queryContent.selectViewport().scrollOffset()
+      queryContent.select('#content').boundingClientRect()
+      queryContent.exec(function (res) {
+        that.contentEleHeight = res[1].height
+      })
+    }, 500)
   },
   onShow () {
     this.index = +this.$mp.query.index
@@ -65,6 +92,21 @@ export default {
     this.backgroundAudio()
   },
   methods: {
+    scroll (e) {
+      const selectTopB = e.target.scrollTop
+      const scrollData = this.scrollData
+      const item = this.contentEleHeight / scrollData.length
+      const y = selectTopB % +item
+      let z = parseInt(selectTopB / item) + 5
+      if (y > 0) {
+        z++
+      }
+      console.log(z)
+      this.selectTime = scrollData[z].time + 's'
+    },
+    selectPlay () {
+
+    },
     audioPlay (e) {
       if (!this.isPlay) {
         this.backgroundAudioManager.play()
@@ -113,6 +155,7 @@ export default {
           this.scrollData.push(obj)
           return items
         })
+        // this.selectTime = this.scrollData[5].time + 's'
         let scrollData = this.scrollData
         this.backgroundAudioManager = wx.getBackgroundAudioManager()
         this.backgroundAudioManager.title = this.musicData.name
@@ -136,6 +179,12 @@ export default {
               this.currentNum++
             }
           })
+        })
+        this.backgroundAudioManager.onPrev(() => {
+          this.pre()
+        })
+        this.backgroundAudioManager.onNext(() => {
+          this.next()
         })
         this.backgroundAudioManager.onPause(() => {
           this.isPlay = false
@@ -170,6 +219,10 @@ page {
         text-align: center;
         line-height: 72rpx;
         font-size: 36rpx;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        word-break: break-all;
         background-image:-webkit-linear-gradient(bottom,#000000,#696969,#D3D3D3); 
         -webkit-background-clip:text; 
         -webkit-text-fill-color:transparent;
@@ -177,31 +230,55 @@ page {
     }
     .detail-lrc {
       width: 700rpx;
-      height: 1000rpx;
+      height: 740rpx;
       padding-top: 1rpx;
       margin: 76rpx auto;
       border-radius: 20rpx;
       background-color: rgba(245,245,245, 0.6);
       box-shadow: 0 0 10rpx #F0F8FF;
-      .scroll-view {
-        height: 920rpx;
-        margin: 40rpx 0;
+      position: relative;
+      .scroll-current {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: absolute;
+        top: 340rpx;
+        height: 60rpx;
+        width: 700rpx;
+        line-height: 60rpx;
         div {
-          height: 60rpx;
-          padding: 0 30rpx;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          word-break: break-all;
-          font-size: 30rpx;
-          text-align: center;
-          color: rgba(0,0,0,.9);
-          line-height: 60rpx;
-          transition: all .3s linear;
+          padding: 0 10rpx;
         }
-        .active {
-          color: rgba(0,100,0, .9);
-          transform: scale(1.1);
+      }
+      .scroll-view {
+        height: 660rpx;
+        margin: 40rpx 0;
+        position: relative;
+        .scroll-content {
+          position: absolute;
+          left: 0;
+          width: 100%;
+          top: 0;
+          padding-bottom: 300rpx;
+          div {
+            height: 60rpx;
+            padding: 0 30rpx;
+            width: 510rpx;
+            margin: 0 auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            word-break: break-all;
+            font-size: 30rpx;
+            text-align: center;
+            color: rgba(0,0,0,.9);
+            line-height: 60rpx;
+            transition: all .3s linear;
+          }
+          .active {
+            color: rgba(0,100,0, .9);
+            transform: scale(1.1);
+          }
         }
       }
     }
