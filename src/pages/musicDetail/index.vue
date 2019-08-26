@@ -5,11 +5,11 @@
         <h5>{{ musicData.name }} --- {{ musicData.singer }}</h5>
       </div>
       <div class="detail-lrc" :style="isIphoneX ? 'top: 150rpx;' : ''">
-        <div class="scroll-current">
+        <div class="scroll-current"  v-if="isShowScrollCurrent">
           <div>---</div>
           <div @click="selectPlay">{{ selectTime }}</div>
         </div>
-        <scroll-view id="scroll" class="scroll-view" scroll-y=true @scroll="scroll" :scroll-top="scrollTop" scroll-with-animation=true>
+        <scroll-view id="scroll" class="scroll-view" scroll-y=true @scroll="scroll" :scroll-top="scrollTop" :scroll-with-animation="isScrollAnimate" @touchstart="touchstart" @touchend="touchend">
           <div class="scroll-content" id="content">
             <div class="item" :class="{ 'active' :  (currentNum - 1) == index && scrollTop }" v-for="(item, index) in lrc" :key="index" :data-time="item[0]" :data-top="(index + 1) * 60" :data-index="index">
               {{ item[1] }}
@@ -46,7 +46,10 @@ export default {
       index: 0,
       selectTime: 0,
       scrollEleHeight: null,
-      contentEleHeight: null
+      contentEleHeight: null,
+      z: 0,
+      isScrollAnimate: true,
+      isShowScrollCurrent: false
     }
   },
   onReady () {
@@ -97,14 +100,26 @@ export default {
       const scrollData = this.scrollData
       const item = this.contentEleHeight / (scrollData.length + 5)
       const y = selectTopB % +item
-      let z = parseInt(selectTopB / item) + 5
+      this.z = parseInt(selectTopB / item) + 5
       if (y > 0) {
-        z++
+        this.z++
       }
-      this.selectTime = scrollData[z].time + 's'
+      this.selectTime = scrollData[this.z].time + 's'
+    },
+    touchstart () {
+      this.isShowScrollCurrent = true
+    },
+    touchend () {
+      setTimeout(() => {
+        this.isShowScrollCurrent = false
+      }, 5000)
     },
     selectPlay () {
-
+      this.isShowScrollCurrent = false
+      this.isScrollAnimate = false
+      this.currentNum = this.z
+      this.backgroundAudioManager.seek(parseInt(this.selectTime))
+      this.backgroundAudioManager.play()
     },
     audioPlay (e) {
       if (!this.isPlay) {
@@ -163,6 +178,7 @@ export default {
         this.backgroundAudioManager.coverImgUrl = this.musicData.pic
         this.backgroundAudioManager.src = this.musicData.url
         this.backgroundAudioManager.onPlay(() => {
+          this.isScrollAnimate = true
           this.isPlay = true
           wx.setStorage({
             key: 'historyMusicId',
@@ -173,7 +189,7 @@ export default {
               return
             }
             const currentTime = this.backgroundAudioManager.currentTime
-            if (currentTime >= scrollData[this.currentNum].time) {
+            if (currentTime >= scrollData[this.currentNum].time && !this.isShowScrollCurrent) {
               this.scrollTop = scrollData[this.currentNum].scrollTop + 'rpx'
               this.currentNum++
             }
@@ -246,6 +262,7 @@ page {
         width: 690rpx;
         padding: 0 5rpx;
         line-height: 60rpx;
+        z-index: 99;
         div {
           padding: 0 10rpx;
         }
