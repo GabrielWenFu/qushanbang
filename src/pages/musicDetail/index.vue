@@ -4,7 +4,7 @@
       <div class="detail-title">
         <h5>{{ musicData.name }} --- {{ musicData.singer }}</h5>
       </div>
-      <div class="detail-lrc">
+      <div class="detail-lrc" :style="isIphoneX ? 'top: 150rpx;' : ''">
         <div class="scroll-current">
           <div>---</div>
           <div @click="selectPlay">{{ selectTime }}</div>
@@ -95,13 +95,12 @@ export default {
     scroll (e) {
       const selectTopB = e.target.scrollTop
       const scrollData = this.scrollData
-      const item = this.contentEleHeight / scrollData.length
+      const item = this.contentEleHeight / (scrollData.length + 5)
       const y = selectTopB % +item
       let z = parseInt(selectTopB / item) + 5
       if (y > 0) {
         z++
       }
-      console.log(z)
       this.selectTime = scrollData[z].time + 's'
     },
     selectPlay () {
@@ -148,7 +147,7 @@ export default {
         })
         const data2 = data1.map((items, index) => {
           items[0] = items[0].replace(/^\[/g, '').split(':')
-          items[0] = items[0][0] * 60 + +items[0][1]
+          items[0] = (items[0][0] * 60 + +items[0][1]).toFixed(2)
           const obj = {}
           obj.time = items[0]
           obj.scrollTop = items[0] ? index * 60 - 300 : ''
@@ -170,7 +169,7 @@ export default {
             data: this.musicData.id
           })
           this.backgroundAudioManager.onTimeUpdate(() => {
-            if (!this.isPlay) {
+            if (!scrollData[this.currentNum].time) {
               return
             }
             const currentTime = this.backgroundAudioManager.currentTime
@@ -244,7 +243,8 @@ page {
         position: absolute;
         top: 340rpx;
         height: 60rpx;
-        width: 700rpx;
+        width: 690rpx;
+        padding: 0 5rpx;
         line-height: 60rpx;
         div {
           padding: 0 10rpx;
@@ -260,6 +260,7 @@ page {
           width: 100%;
           top: 0;
           padding-bottom: 300rpx;
+          font-size: 0;
           div {
             height: 60rpx;
             padding: 0 30rpx;
