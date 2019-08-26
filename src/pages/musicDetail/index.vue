@@ -49,7 +49,8 @@ export default {
       contentEleHeight: null,
       z: 0,
       isScrollAnimate: true,
-      isShowScrollCurrent: false
+      isShowScrollCurrent: false,
+      timeOut: null
     }
   },
   onReady () {
@@ -58,7 +59,6 @@ export default {
     query.select('#scroll').boundingClientRect()
     query.selectViewport().scrollOffset()
     query.exec(function (res) {
-      console.log(res)
       that.scrollEleHeight = res[0].height
     })
     setTimeout(() => {
@@ -107,10 +107,11 @@ export default {
       this.selectTime = scrollData[this.z].time + 's'
     },
     touchstart () {
+      clearTimeout(this.timeOut)
       this.isShowScrollCurrent = true
     },
     touchend () {
-      setTimeout(() => {
+      this.timeOut = setTimeout(() => {
         this.isShowScrollCurrent = false
       }, 5000)
     },
@@ -185,7 +186,6 @@ export default {
             data: this.musicData.id
           })
           this.backgroundAudioManager.onTimeUpdate(() => {
-            console.log(scrollData[this.currentNum].time)
             if (this.currentNum >= this.scrollData.length - 1) {
               this.currentNum = this.scrollData.length - 1
               return
