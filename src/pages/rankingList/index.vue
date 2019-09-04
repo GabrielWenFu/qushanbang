@@ -3,7 +3,7 @@
     <h5>排行榜</h5>
     <ul>
       <li v-for="(item, index) in rankingList" :key="index" @click="goPage(item)">
-        {{item.name}}
+        {{item.title}}
       </li>
     </ul>
     <div class="mask" v-if="isShowMask">
@@ -12,40 +12,24 @@
   </div>
 </template>
 <script>
+import Api from '@/utils/api'
 
 export default {
   data () {
     return {
-      rankingList: [{
-        name: '流行指数榜',
-        id: 4
-      }, {
-        name: '热歌榜',
-        id: 26
-      }, {
-        name: '新歌榜',
-        id: 27
-      }, {
-        name: '内地榜',
-        id: 5
-      }, {
-        name: '欧美榜',
-        id: 3
-      }, {
-        name: '抖音榜',
-        id: 60
-      }, {
-        name: '网路歌曲榜',
-        id: 28
-      }, {
-        name: 'K歌金曲榜',
-        id: 28
-      }, {
-        name: '电音榜',
-        id: 57
-      }],
+      rankingList: [],
       isShowMask: true
     }
+  },
+  onLoad () {
+    Api._ranking_list().then(res => {
+      const { code, data, msg } = res.data
+      if (code === 200) {
+        this.rankingList = data
+      } else {
+        console.log(msg)
+      }
+    })
   },
   onShow () {
     if (wx.getStorageSync('myinfo')) {

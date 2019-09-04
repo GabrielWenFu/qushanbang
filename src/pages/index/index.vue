@@ -31,17 +31,41 @@ export default {
       3: '欧美榜',
       4: '流行指数榜',
       5: '内地榜',
+      16: '韩国榜',
+      17: '日本榜',
       26: '热歌榜',
       27: '新歌榜',
       28: '网路歌曲榜',
+      29: '影视金曲榜',
       36: 'K歌金曲榜',
+      52: '腾讯音乐人原创榜',
       57: '电音榜',
-      60: '抖音榜'
+      58: '说唱榜',
+      59: '香港地区榜',
+      60: '抖音排行榜',
+      61: '台湾地区榜',
+      105: '日本公信榜',
+      106: '韩国Mnet榜',
+      107: '英国UK榜',
+      108: '美国公告牌榜',
+      114: '香港商台榜',
+      123: '美国iTunes榜',
+      126: 'JOOX本地热播榜',
+      127: '台湾KKBOX榜',
+      128: 'YouTube音乐排行榜',
+      201: 'MV榜'
     }[this.$mp.query.id]
     Api._qqTopList(this.$mp.query.id).then(res => {
       const { code, data, msg } = res.data
       if (code === 200) {
-        this.list = data
+        if (data.length) {
+          this.list = data
+        } else {
+          wx.showToast({
+            title: '暂无相关歌曲哟~~',
+            icon: 'none'
+          })
+        }
         wx.setStorage({
           key: 'musiclist',
           data: data

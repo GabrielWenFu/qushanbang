@@ -50,7 +50,8 @@ export default {
       z: 0,
       isScrollAnimate: true,
       isShowScrollCurrent: false,
-      timeOut: null
+      timeOut: null,
+      bgSelectTime: null
     }
   },
   onReady () {
@@ -112,7 +113,8 @@ export default {
       if (y > 0) {
         this.z++
       }
-      this.selectTime = scrollData[this.z].time + 's'
+      this.bgSelectTime = scrollData[this.z].time
+      this.selectTime = scrollData[this.z].formTime
     },
     touchstart () {
       clearTimeout(this.timeOut)
@@ -127,7 +129,7 @@ export default {
       this.isShowScrollCurrent = false
       this.isScrollAnimate = false
       this.currentNum = this.z
-      this.backgroundAudioManager.seek(parseInt(this.selectTime))
+      this.backgroundAudioManager.seek(parseInt(this.bgSelectTime))
       this.backgroundAudioManager.play()
     },
     audioPlay (e) {
@@ -171,9 +173,10 @@ export default {
           return item
         })
         const data2 = data1.map((items, index) => {
-          items[0] = items[0].replace(/^\[/g, '').split(':')
-          items[0] = (items[0][0] * 60 + +items[0][1]).toFixed(2)
           const obj = {}
+          items[0] = items[0].replace(/^\[/g, '').split(':')
+          obj.formTime = +items[0][0] > 0 ? `${items[0][0]}:${items[0][1].split('.')[0]}: ${items[0][1].split('.')[1]}` : `${items[0][1].split('.')[0]}: ${items[0][1].split('.')[1]}`
+          items[0] = (items[0][0] * 60 + +items[0][1]).toFixed(2)
           obj.time = items[0]
           obj.scrollTop = items[0] ? index * 60 - 300 : ''
           this.scrollData.push(obj)
@@ -186,7 +189,7 @@ export default {
         this.backgroundAudioManager.title = this.musicData.name
         this.backgroundAudioManager.epname = this.musicData.name
         this.backgroundAudioManager.singer = this.musicData.singer
-        this.backgroundAudioManager.coverImgUrl = this.musicData.pic
+        this.backgroundAudioManager.coverImgUrl = 'http:' + this.musicData.pic
         this.backgroundAudioManager.src = this.musicData.url
         this.backgroundAudioManager.onPlay(() => {
           this.isScrollAnimate = true
@@ -196,8 +199,8 @@ export default {
             data: this.musicData.id
           })
           this.backgroundAudioManager.onTimeUpdate(() => {
-            if (this.currentNum >= this.scrollData.length - 1) {
-              this.currentNum = this.scrollData.length - 1
+            if (this.currentNum >= this.scrollData.length) {
+              this.currentNum = this.scrollData.length
               return
             }
             const currentTime = this.backgroundAudioManager.currentTime

@@ -12,6 +12,12 @@ const Api = {
         }))
     })
   },
+  _ranking_list () {
+    const options = {
+      url: `https://www.guowenfu.com/tencent/ranking_list`
+    }
+    return this._core(options)
+  },
   _qqTopList (id = 26) {
     const options = {
       url: `https://www.guowenfu.com/tencent/music_list`,
