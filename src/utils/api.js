@@ -14,7 +14,7 @@ const Api = {
   },
   _qqTopList (id = 26) {
     const options = {
-      url: `http://www.guowenfu.com/tencent/music_list`,
+      url: `https://www.guowenfu.com/tencent/music_list`,
       data: {
         id
       }
@@ -23,7 +23,7 @@ const Api = {
   },
   _qqLrc (id) {
     const options = {
-      url: `http://www.guowenfu.com/tencent/lrc`,
+      url: `https://www.guowenfu.com/tencent/lrc`,
       data: {
         id
       }
