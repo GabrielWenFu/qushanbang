@@ -175,7 +175,7 @@ export default {
         const data2 = data1.map((items, index) => {
           const obj = {}
           items[0] = items[0].replace(/^\[/g, '').split(':')
-          obj.formTime = +items[0][0] > 0 ? `${items[0][0]}:${items[0][1].split('.')[0]}: ${items[0][1].split('.')[1]}` : `${items[0][1].split('.')[0]}: ${items[0][1].split('.')[1]}`
+          obj.formTime = +items[0][0] > 0 ? `${items[0][0]}:${items[0][1].split('.')[0]}:${items[0][1].split('.')[1]}` : `${items[0][1].split('.')[0]}:${items[0][1].split('.')[1]}`
           items[0] = (items[0][0] * 60 + +items[0][1]).toFixed(2)
           obj.time = items[0]
           obj.scrollTop = items[0] ? index * 60 - 300 : ''
