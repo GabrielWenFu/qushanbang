@@ -48,7 +48,7 @@ export default {
       scrollEleHeight: null,
       contentEleHeight: null,
       z: 0,
-      isScrollAnimate: true,
+      isScrollAnimate: false,
       isShowScrollCurrent: false,
       timeOut: null,
       bgSelectTime: null
@@ -65,6 +65,8 @@ export default {
     })
   },
   onShow () {
+    this.lrc = []
+    this.isScrollAnimate = false
     this.index = +this.$mp.query.index
     this.list = wx.getStorageSync('musiclist')
   },
@@ -109,7 +111,7 @@ export default {
       const scrollData = this.scrollData
       const item = this.contentEleHeight / (scrollData.length + 5)
       const y = selectTopB % +item
-      this.z = parseInt(selectTopB / item) + 5
+      this.z = parseInt(selectTopB / item) + 4
       if (y > 0) {
         this.z++
       }
@@ -175,14 +177,17 @@ export default {
       Api._qqLrc(this.musicData.id).then(res => {
         const data = res.data.split('\n')
         this.scrollData = []
-        const data1 = data.map((item, index) => {
+        let data1 = []
+        data.map((item, index) => {
           item = item.split(']')
-          return item
+          if (item[1] || index <= 5) {
+            data1.push(item)
+          }
         })
         const data2 = data1.map((items, index) => {
           const obj = {}
           items[0] = items[0].replace(/^\[/g, '').split(':')
-          obj.formTime = +items[0][0] > 0 ? `${items[0][0]}:${items[0][1].split('.')[0]}:${items[0][1].split('.')[1]}` : `${items[0][1].split('.')[0]}:${items[0][1].split('.')[1]}`
+          obj.formTime = +items[0][0] > 0 ? `${items[0][0]}:${items[0][1].split('.')[0]}:${items[0][1].split('.')[1]}` : +items[0][1].split('.')[1] ? `${items[0][1].split('.')[0]}:${items[0][1].split('.')[1].replace(/\r/g, '')}` : 0
           items[0] = (items[0][0] * 60 + +items[0][1]).toFixed(2)
           obj.time = items[0]
           obj.scrollTop = items[0] ? index * 60 - 300 : ''
