@@ -77,12 +77,20 @@ export default {
   },
   methods: {
     goPage (item, index) {
-      wx.setStorage({
-        key: 'music',
-        data: item
-      })
-      wx.navigateTo({
-        url: `/pages/musicDetail/main?id=${item.id}&index=${index}`
+      Api.getSongVkey(item.mid).then(res => {
+        const { data, code } = res.data
+        let vkey
+        if (code === 0) {
+          vkey = data.items[0].vkey
+          item.url = `${item.url}?guid=5931742855&vkey=${vkey}&uin=3051522991&fromtag=38`
+          wx.setStorage({
+            key: 'music',
+            data: item
+          })
+          wx.navigateTo({
+            url: `/pages/musicDetail/main?id=${item.id}&index=${index}`
+          })
+        }
       })
     }
   }

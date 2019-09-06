@@ -144,23 +144,30 @@ export default {
       if (this.index === 0) return
       const index = (this.index - 1) >= 0 ? this.index - 1 : 0
       this.index = index
-      this.musicData = this.list[index]
-      wx.setStorage({
-        key: 'music',
-        data: this.list[index]
-      })
+      this.getSongKey(this.list[index])
       this.backgroundAudio()
     },
     next () {
       if (this.index === this.list.length - 1) return
       const index = (this.index + 1) <= this.list.length - 1 ? this.index + 1 : this.list.length - 1
       this.index = index
-      this.musicData = this.list[index]
-      wx.setStorage({
-        key: 'music',
-        data: this.list[index]
-      })
+      this.getSongKey(this.list[index])
       this.backgroundAudio()
+    },
+    getSongKey (item) {
+      Api.getSongVkey(item.mid).then(res => {
+        const { data, code } = res.data
+        let vkey
+        if (code === 0) {
+          vkey = data.items[0].vkey
+          item.url = `${item.url}?guid=5931742855&vkey=${vkey}&uin=3051522991&fromtag=38`
+          this.musicData = item
+          wx.setStorage({
+            key: 'music',
+            data: item
+          })
+        }
+      })
     },
     backgroundAudio () {
       this.currentNum = 5
